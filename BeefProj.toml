@@ -1,0 +1,6 @@
+FileVersion = 1
+
+[Project]
+Name = "sead"
+TargetType = "BeefLib"
+StartupObject = "sead.Program"

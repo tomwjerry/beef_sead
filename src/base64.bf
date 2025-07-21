@@ -77,35 +77,40 @@ public static class Base64
 
 	public static void Encode(String input, String output)
 	{
-		var bytes = scope Span<char8>(input.CStr(), input.Length);
-		Encode(*bytes, output);
+		Span<char8> bytes = Span<char8>(input.CStr(), input.Length);
+		Encode(bytes.ToRawData(), output);
 	}
 
 	public static void Encode(Span<char8> input, String output)
 	{
-		int cur = 0;
-		while (cur < input.Length)
-		{
-			uint8 c1 = (uint8)input[cur];
-			uint8 c2 = cur < input.Length - 1 ? (uint8)input[cur+1] : 0;
-			uint8 c3 = cur < input.Length - 2 ? (uint8)input[cur+2] : 0;
-
-			uint8 n1 = c1 >> 2;
-			uint8 n2 = ((c1 << 6) + (c2 >> 2)) >> 2;
-			uint8 n3 = ((c2 << 4) + (c3 >> 4)) >> 2;
-			uint8 n4 = (c3 << 2) >> 2;
-
-			output.Append(charMap[n1]);
-			output.Append(charMap[n2]);
-			if (cur < input.Length - 1) output.Append(charMap[n3]);
-			if (cur < input.Length - 2) output.Append(charMap[n4]);
-
-			cur += 3;
-		}
-
-		while (output.Length % 4 != 0)
-			output.Append("=");
+		Encode(input.ToRawData(), output);
 	}
+
+    public static void Encode(Span<uint8> input, String output)
+    {
+    	int cur = 0;
+    	while (cur < input.Length)
+    	{
+    		uint8 c1 = input[cur];
+    		uint8 c2 = cur < input.Length - 1 ? input[cur + 1] : 0;
+    		uint8 c3 = cur < input.Length - 2 ? input[cur + 2] : 0;
+
+    		uint8 n1 = c1 >> 2;
+    		uint8 n2 = ((c1 << 6) + (c2 >> 2)) >> 2;
+    		uint8 n3 = ((c2 << 4) + (c3 >> 4)) >> 2;
+    		uint8 n4 = (c3 << 2) >> 2;
+
+    		output.Append(charMap[n1]);
+    		output.Append(charMap[n2]);
+    		if (cur < input.Length - 1) output.Append(charMap[n3]);
+    		if (cur < input.Length - 2) output.Append(charMap[n4]);
+
+    		cur += 3;
+    	}
+
+    	while (output.Length % 4 != 0)
+    		output.Append("=");
+    }
 
 	private static Result<uint8, DecodeError> MapCharToId(char8 char)
 	{
